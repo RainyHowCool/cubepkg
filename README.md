@@ -13,14 +13,19 @@ English(en_US)  [简体中文(zh_CN)](README.zh_CN.md)
 3. Our plans
 
     You know. This project doesn't even belong to the alpha stage! But we made the future plan.
+
         1. Write the cubepkg-vmassembler    🤖 In progress
+
         2. Write the cubepkg-vm runner      ❌ Not started
+
         3. *Project Catalyst*               ❎ Too hard and not started
+
         4. Package format                   ❌ Not started
+        
         5. Package sharing network          💰 Hasn't money for server lol
 
 4. About the developers
 
     Students
-    
+
     1. RainyHowCool
