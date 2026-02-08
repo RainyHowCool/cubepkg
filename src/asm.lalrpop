@@ -35,6 +35,8 @@ OperationCmd: Operation = {
     "divr" <reg1:Regs> "," <reg2:Regs> => Operation::new(9, reg1, reg2),
 	"mov" <reg1:Regs> "," <reg2:Regs>  => Operation::new(0xA, reg1, reg2),
     "quit" => Operation::new(0xF0, 0, 0),
+    "ucs" => Operation::new(0xF1, 0, 0),
+    "uds" => Operation::new(0xF2, 0, 0),
 }
 
 Regs: i32 = {
