@@ -1,4 +1,16 @@
 imm r0, 1
-imm r5, 7
-mov r1, r5
-imm r4, 137891
+add r0, 90
+sub r0, 78
+mov r10, r0
+mul r0, 2
+add r0, 1
+div r0, 3
+imm r1, 2
+addr r0, r1
+imm r1, 5
+subr r0, r1
+imm r1, 3
+divr r0, r1
+imm r1, 2
+mulr r0, r1
+quit

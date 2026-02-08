@@ -25,7 +25,16 @@ Operation: Operation = {
 
 OperationCmd: Operation = {
     "imm" <reg:Regs> "," <int_const:IntConst> => Operation::new(1, reg, int_const),
-	"mov" <reg1:Regs> "," <reg2:Regs>  => Operation::new(2, reg1, reg2),
+    "add" <reg:Regs> "," <int_const:IntConst> => Operation::new(2, reg, int_const),
+    "sub" <reg:Regs> "," <int_const:IntConst> => Operation::new(3, reg, int_const),
+    "mul" <reg:Regs> "," <int_const:IntConst> => Operation::new(4, reg, int_const),
+    "div" <reg:Regs> "," <int_const:IntConst> => Operation::new(5, reg, int_const),
+    "addr" <reg1:Regs> "," <reg2:Regs> => Operation::new(6, reg1, reg2),
+    "subr" <reg1:Regs> "," <reg2:Regs> => Operation::new(7, reg1, reg2),
+    "mulr" <reg1:Regs> "," <reg2:Regs> => Operation::new(8, reg1, reg2),
+    "divr" <reg1:Regs> "," <reg2:Regs> => Operation::new(9, reg1, reg2),
+	"mov" <reg1:Regs> "," <reg2:Regs>  => Operation::new(0xA, reg1, reg2),
+    "quit" => Operation::new(0xF0, 0, 0),
 }
 
 Regs: i32 = {

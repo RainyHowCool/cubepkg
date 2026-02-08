@@ -16,12 +16,12 @@
 
         1. 编写 cubepkg-vmassembler             🤖 现在进行时
 
-        2. 编写 cubepkg-vm                       ❌ 未开始
+        2. 编写 cubepkg-vm                      🤖 现在进行时
 
-        3. *Project Catalyst*                   ❎ 🔥点击左下角一口气看到大结局🔥
+        3. ***Project Catalyst***               ❎ 🔥点击左下角一口气看到大结局🔥
 
         4. 包格式                                ❌ 未开始
-        
+
         5. 包分享网络（wtf?)                      💰 mht我会死吗？
 
 4. 关于开发者

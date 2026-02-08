@@ -16,12 +16,12 @@ English(en_US)  [简体中文(zh_CN)](README.zh_CN.md)
 
         1. Write the cubepkg-vmassembler    🤖 In progress
 
-        2. Write the cubepkg-vm runner      ❌ Not started
+        2. Write the cubepkg-vm runner      🤖 In progress
 
-        3. *Project Catalyst*               ❎ Too hard and not started
+        3. ***Project Catalyst***           ❎ Too hard and not started
 
         4. Package format                   ❌ Not started
-        
+
         5. Package sharing network          💰 Hasn't money for server lol
 
 4. About the developers
