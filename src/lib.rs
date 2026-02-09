@@ -8,7 +8,7 @@ pub struct Operation {
 }
 
 #[derive(Debug, Clone)]
-#[allow(non_snake_case, unused)] // I allowed lmao
+#[allow(non_snake_case)] // I allowed lmao
 pub struct Register {
     R0: usize,
     R1: usize,
@@ -76,6 +76,24 @@ impl Operation {
         } else if self.opcode <= 0xA {
             return vec![self.opcode << 4 | self.opt1 as u8,
                 self.opt2 as u8]
+        } else if self.opcode == 0xB {
+            return vec![0x08, self.opcode << 4 | self.opt1 as u8,
+                    (self.opt2 << 24 >> 24) as u8,
+                    (self.opt2 >> 8 << 24 >> 24) as u8,
+                    (self.opt2 >> 16 << 24 >> 24) as u8,
+                    (self.opt2 >> 24) as u8];
+        } else if self.opcode == 0xC {
+            return vec![0x08, self.opcode << 4 | self.opt2 as u8,
+                    (self.opt1 << 24 >> 24) as u8,
+                    (self.opt1 >> 8 << 24 >> 24) as u8,
+                    (self.opt1 >> 16 << 24 >> 24) as u8,
+                    (self.opt1 >> 24) as u8];
+        } else if self.opcode <= 0xE {
+            return vec![0x08, self.opcode << 4 | self.opt1 as u8,
+                    (self.opt2 << 24 >> 24) as u8,
+                    (self.opt2 >> 8 << 24 >> 24) as u8,
+                    (self.opt2 >> 16 << 24 >> 24) as u8,
+                    (self.opt2 >> 24) as u8];
         } else if self.opcode >= 0xF0 {
             return vec![self.opcode];
         }
@@ -86,6 +104,7 @@ impl Operation {
 pub struct VM {
     memory: i32,
     code_seg: Vec<u8>,
+    code_seg_len: usize,
     data_seg: Vec<u8>,
     debug: bool,
 }
@@ -94,6 +113,7 @@ impl VM {
     pub fn from_file(memory: i32, debug: bool, name: String) -> Result<Self, u8> {
         let mut code_seg: Vec<u8> = vec![];
         let mut data_seg: Vec<u8> = vec![];
+        let mut code_seg_len: usize = 0;
         let raw: Vec<u8> = fs::read(name).unwrap();
         // 1. Check magic number
         if raw.len() < 32 {
@@ -141,6 +161,7 @@ impl VM {
             // Execute
             if execuable == 1 {
                 code_seg = raw[offest as usize..(offest + len) as usize].to_vec();
+                code_seg_len = len as usize;
             } else {
                 data_seg.extend(&raw[offest as usize..(offest + len) as usize]);
             }
@@ -148,6 +169,7 @@ impl VM {
         Ok(Self {
             memory,
             code_seg,
+            code_seg_len,
             data_seg,
             debug,
         })
@@ -208,6 +230,22 @@ impl VM {
             ((mem[offest + 3]) as u32) << 24
     }
 
+    pub fn get_ram_u8(&self, mem: &[u8], offest: usize, register: Register) -> u8 {
+        if register.SEG == 0 {
+            return mem[offest];
+        } else {
+            return mem[offest + self.code_seg_len];
+        }
+    }
+
+    pub fn set_ram_u8(&self, mem: &mut [u8], offest: usize, value: u8, register: &Register) {
+        if register.SEG == 0 {
+            mem[offest] = value;
+        } else {
+            mem[offest + self.code_seg_len] = value;
+        }
+    }
+
     pub fn run(&self) {
         let mut ram: Vec<u8> = Vec::with_capacity(self.memory as usize);
         // Copy data to RAM
@@ -217,7 +255,7 @@ impl VM {
         //let ram: &[u8] = &ram_unlimited[0..self.memory as usize];
         let mut register = Register::new();
         while register.IP <= self.memory as usize {
-            if ram[register.IP] == 0x32 { register.IP += 1; continue; }
+            if ram[register.IP] == 0x32 || ram[register.IP] == 0x08 { register.IP += 1; continue; }
             let register_ref = register.clone();
             match ram[register.IP] >> 4 {
                 0x01 => { 
@@ -284,9 +322,35 @@ impl VM {
                         Self::get_register_by_id(register_ref.clone(), ram[register_ref.IP + 1]));
                     register.IP += 1;
                 },
+                0x0B => {
+                    Self::change_register_by_id(&mut register, ram[register_ref.IP] << 4 >> 4,
+                        self.get_ram_u8(&ram, Self::get_u32(&ram, (register_ref.IP + 1) as usize) as usize, 
+                            register_ref.clone()) as usize);
+                    register.IP += 4;
+                },
+                0x0C => {
+                    let reg_id = ram[register.IP] << 4 >> 4;
+                    let off = Self::get_u32(&ram, (register.IP + 1) as usize) as usize;
+                    self.set_ram_u8(&mut ram, off, Self::get_register_by_id(register.clone(), reg_id) as u8, &register);
+                    register.IP += 4;
+                },
+                0x0D => {
+                    Self::change_register_by_id(&mut register, ram[register_ref.IP << 4 >> 4],
+                        Self::get_register_by_id(register_ref.clone(), ram[register_ref.IP << 4 >> 4] >>
+                            (Self::get_u32(&ram, (register_ref.IP + 1) as usize) as usize)));
+                    register.IP += 4;
+                },
+                0x0E => {
+                    Self::change_register_by_id(&mut register, ram[register_ref.IP << 4 >> 4],
+                        Self::get_register_by_id(register_ref.clone(), ram[register_ref.IP << 4 >> 4] <<
+                            (Self::get_u32(&ram, (register_ref.IP + 1) as usize) as usize)));
+                    register.IP += 4;
+                }
                 0x0F => {
                     match ram[register.IP] << 4 >> 4 {
                         0 => return,
+                        1 => register.SEG = 0,
+                        2 => register.SEG = 1,
                         _ => eprintln!("Unknown opcode"),
                     }
                 },
